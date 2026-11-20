@@ -28,7 +28,7 @@ For local development, the Express server serves both the frontend and API at `h
 
 ## Deploy with GitHub Pages, Render, and Atlas
 
-The GitHub Actions workflow in `.github/workflows/pages.yml` publishes only the `public` directory to GitHub Pages when changes are pushed to `main`. It reads the API origin from the repository variable `NOTICEHUB_API_URL` and injects it into the frontend at deploy time; do not commit a deployment URL or credentials into the source.
+The GitHub Actions workflow in `.github/workflows/pages.yml` publishes only the `public` directory to GitHub Pages when changes are pushed to `main`. It uses the repository variable `NOTICEHUB_API_URL` when set, or defaults to `https://noticehub-api.onrender.com`, and injects that API origin into the frontend at deploy time. Do not commit credentials into the source.
 
 1. **Prepare MongoDB Atlas.** Create a production database user with a strong, unique password and copy the connection URI. Replace its database name and URL-encode any special characters in the username or password. Restrict Network Access to the outbound IP ranges for your Render service when possible; avoid opening the database to all IPs unless you understand and accept that exposure.
 2. **Deploy the API to Render.** Create a Web Service from this repository, with the repository root as the root directory, `npm install` as the build command, `npm start` as the start command, and `/api/health` as the health check path. Choose an always-on plan if you need to avoid cold starts. Set these environment variables in Render's dashboard:
@@ -44,7 +44,7 @@ The GitHub Actions workflow in `.github/workflows/pages.yml` publishes only the 
    - `SMTP_SECURE=false` for port 587, or `true` when your provider requires implicit TLS
 
    Render supplies `PORT` automatically. The API health check returns success only while MongoDB is connected. Confirm `https://YOUR-RENDER-SERVICE.onrender.com/api/health` reports `{"status":"ok"}` after deployment.
-3. **Configure GitHub Pages.** In the repository's Settings → Pages, select **GitHub Actions** as the build and deployment source. In Settings → Secrets and variables → Actions → Variables, add `NOTICEHUB_API_URL` with the Render service origin, e.g. `https://YOUR-RENDER-SERVICE.onrender.com` (HTTPS origin only; no path). Push to `main` or run the workflow manually. For repositories whose default branch is not `main`, update the workflow branch filter before pushing.
+3. **Configure GitHub Pages.** In the repository's Settings → Pages, select **GitHub Actions** as the build and deployment source. The workflow defaults to `https://noticehub-api.onrender.com`; for another Render service, set the repository variable `NOTICEHUB_API_URL` to that service's HTTPS origin (no path). Push to `main` or run the workflow manually. For repositories whose default branch is not `main`, update the workflow branch filter before pushing.
 4. **Verify the live site.** Open the GitHub Pages URL, confirm the public feed loads, then sign in through **Post a notice** and test creating, editing, and deleting a test notice. Also check password recovery using the configured admin mailbox. Remove test content afterward.
 
 For a GitHub Pages custom domain, use that complete URL (including any path) for `FRONTEND_URL`, and only its origin for `FRONTEND_ORIGINS`. Never put MongoDB, JWT, admin password, or SMTP values in GitHub Pages variables, the frontend, or committed files. Keep those values only in Render's secret environment settings.
