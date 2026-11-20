@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#12233f">
+    <meta name="description" content="The latest campus notices, events, exam updates, and results in one place.">
+    <meta name="referrer" content="no-referrer">
+    <meta name="api-base-url" content="">
+    <title>NoticeHub — Campus updates, together</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="NoticeHub home">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>notice<span class="brand-accent">hub</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="live-status"><span></span> Campus bulletin</span>
+        <button class="admin-link" id="admin-open" type="button">Post a notice <span aria-hidden="true">↗</span></button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR CAMPUS, IN THE KNOW</div>
+          <h1>Campus updates,<br><span>without the chase.</span></h1>
+          <p>Find the latest notices, events, exams, and results. Filter by category and open linked PDFs—no student login required.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-orbit orbit-one"></div>
+          <div class="art-orbit orbit-two"></div>
+          <div class="art-paper">
+            <div class="paper-top"><i></i><i></i><i></i></div>
+            <div class="paper-symbol">N<span>H</span></div>
+            <div class="paper-line wide"></div><div class="paper-line"></div>
+            <div class="paper-line short"></div>
+            <div class="paper-stamp">CAMPUS<br>UPDATE</div>
+          </div>
+          <span class="art-star star-one">✳</span><span class="art-star star-two">✳</span>
+        </div>
+        <div class="hero-foot"><span>01</span><span class="hero-foot-line"></span><span>THE CAMPUS BULLETIN</span></div>
+      </section>
+
+      <section class="benefits" aria-label="NoticeHub features">
+        <article class="benefit-card">
+          <span class="benefit-number">01 / FOR STUDENTS</span>
+          <h2>Everything in one place.</h2>
+          <p>Browse the latest campus updates anytime. Filter by category, search for what matters, and open linked PDFs in a click. Push and email alerts are planned.</p>
+          <span class="benefit-note">No login. No passwords.</span>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-number">02 / FOR STAFF</span>
+          <h2>Simple notice management.</h2>
+          <p>College staff can securely publish, edit, and remove notices, and organize each update by category.</p>
+          <button class="benefit-link" type="button" id="staff-open">Open staff access <span aria-hidden="true">↗</span></button>
+        </article>
+        <article class="benefit-card benefit-roadmap">
+          <span class="benefit-number">03 / UP NEXT</span>
+          <h2>Room to grow.</h2>
+          <p>Future plans include student accounts, direct file uploads, an admin usage analytics dashboard, and support for multiple departments.</p>
+          <span class="benefit-note">Future scope</span>
+        </article>
+      </section>
+
+      <section class="feed-section" aria-labelledby="feed-heading">
+        <div class="feed-heading">
+          <div>
+            <div class="eyebrow dark-eyebrow">FRESH FROM CAMPUS</div>
+            <h2 id="feed-heading">The latest <span>updates</span></h2>
+          </div>
+          <p class="feed-note">Official campus updates, all in one place.</p>
+        </div>
+        <div class="feed-tools">
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="notice-search" type="search" maxlength="100" placeholder="Search notices, exams, events…" aria-label="Search notices">
+            <kbd>Ctrl / ⌘ K</kbd>
+          </label>
+          <label class="sort-control">Sort
+            <select id="notice-sort" aria-label="Sort notices">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
+          <button class="refresh-button" id="refresh-notices" type="button" aria-label="Refresh notices" title="Refresh notices"><span aria-hidden="true">↻</span><span class="refresh-label">Refresh</span></button>
+        </div>
+        <nav class="filters" aria-label="Filter notices by category" id="filters"></nav>
+        <div class="feed-status" id="feed-status" aria-live="polite"></div>
+        <div class="notice-grid" id="notice-grid" aria-live="polite"></div>
+        <div class="empty-state" id="empty-state" hidden>
+          <span class="empty-icon" aria-hidden="true">✳</span>
+          <h3 id="empty-title">No updates just yet</h3>
+          <p id="empty-message">Try another category or check back soon.</p>
+          <button class="secondary-button empty-reset" id="clear-filters" type="button">Clear search and filters</button>
+        </div>
+        <div class="load-error" id="load-error" hidden>
+          <p>We couldn't load the campus updates.</p>
+          <button class="text-button" id="retry-load" type="button">Try again ↗</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer"><a class="brand footer-brand" href="./"><span class="brand-mark">N</span><span>notice<span class="brand-accent">hub</span></span></a><span>Campus updates, made simple.</span><span>© <span id="year"></span> NoticeHub</span></footer>
+
+    <dialog class="modal" id="detail-modal" aria-labelledby="detail-title">
+      <button class="modal-close" type="button" aria-label="Close notice">×</button>
+      <div class="modal-kicker" id="detail-category"></div>
+      <h2 id="detail-title"></h2>
+      <p class="modal-date" id="detail-date"></p>
+      <div class="modal-description" id="detail-description"></div>
+      <a class="download-link" id="detail-download" hidden>Download attached PDF <span>↓</span></a>
+    </dialog>
+
+    <dialog class="modal admin-modal" id="admin-modal" aria-labelledby="admin-title">
+      <button class="modal-close" type="button" aria-label="Close admin panel">×</button>
+      <div class="admin-login" id="admin-login">
+        <div class="eyebrow dark-eyebrow">STAFF ACCESS</div>
+        <h2 id="admin-title">Admin <span>sign in</span></h2>
+        <p class="admin-intro">Sign in to manage campus updates.</p>
+        <form id="login-form" class="stack-form auth-panel">
+          <label>Username<input name="username" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <p class="form-message" id="login-message" role="status"></p>
+          <p class="form-error" id="login-error" role="alert"></p>
+          <button class="primary-button" type="submit">Sign in <span>↗</span></button>
+          <button class="auth-link" id="forgot-open" type="button">Forgot your password?</button>
+        </form>
+        <form id="forgot-form" class="stack-form auth-panel" hidden>
+          <h3 class="auth-subheading">Reset your password</h3>
+          <p class="auth-copy">Enter the admin email address. If it matches, we’ll send a one-time reset link.</p>
+          <label>Admin email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+          <p class="form-message" id="forgot-message" role="status"></p>
+          <p class="form-error" id="forgot-error" role="alert"></p>
+          <button class="primary-button" type="submit">Send reset link <span>↗</span></button>
+          <button class="auth-link" id="login-return" type="button">Back to sign in</button>
+        </form>
+        <form id="reset-form" class="stack-form auth-panel" hidden>
+          <h3 class="auth-subheading">Choose a new password</h3>
+          <p class="auth-copy">Use at least 12 characters. Reset links expire after 30 minutes.</p>
+          <label>New password<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="72" required></label>
+          <label>Confirm new password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required></label>
+          <p class="form-error" id="reset-error" role="alert"></p>
+          <button class="primary-button" type="submit">Update password <span>↗</span></button>
+          <button class="auth-link" id="reset-return" type="button">Back to sign in</button>
+        </form>
+      </div>
+      <div class="admin-dashboard" id="admin-dashboard" hidden>
+        <div class="admin-heading">
+          <div><div class="eyebrow dark-eyebrow">CAMPUS EDITOR</div><h2 id="admin-title-signed-in">Manage <span>updates</span></h2></div>
+          <button id="logout-button" class="text-button" type="button">Sign out ↗</button>
+        </div>
+        <form id="notice-form" class="stack-form notice-form">
+          <input type="hidden" name="noticeId">
+          <label>Notice title<input name="title" maxlength="160" required placeholder="e.g. Mid-semester exam schedule"></label>
+          <label>Category<select name="category" required>
+            <option value="Notice">Notice</option><option value="Event">Event</option><option value="Exam">Exam</option><option value="Result">Result</option><option value="Download">Download</option>
+          </select></label>
+          <label>Description<textarea name="description" rows="4" maxlength="10000" required placeholder="Share the details students need to know…"></textarea></label>
+          <label class="file-label">Public PDF link <span>(optional)</span><input name="fileUrl" type="url" maxlength="2048" placeholder="https://example.com/circular.pdf"></label>
+          <p class="form-error" id="notice-error" role="alert"></p>
+          <div class="form-actions"><button class="primary-button" id="save-notice" type="submit">Publish update <span>↗</span></button><button class="secondary-button" id="cancel-edit" type="button" hidden>Cancel edit</button></div>
+        </form>
+        <div class="managed-list-heading"><h3>Your updates</h3><span id="managed-count"></span></div>
+        <div class="managed-list" id="managed-list"></div>
+      </div>
+    </dialog>
+  </body>
+</html>
