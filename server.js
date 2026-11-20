@@ -374,6 +374,25 @@ function isEmailRecoveryConfigured() {
   );
 }
 
+function validateMongoUri(uri) {
+  let parsed;
+  try {
+    parsed = new URL(uri);
+  } catch {
+    throw new Error("MONGODB_URI is malformed. Copy the full connection string from MongoDB Atlas and URL-encode special characters in the database username and password.");
+  }
+
+  if (!["mongodb:", "mongodb+srv:"].includes(parsed.protocol) || !parsed.hostname) {
+    throw new Error("MONGODB_URI must be a MongoDB connection string with a valid hostname.");
+  }
+  if (/[<>\s]/.test(parsed.hostname) || parsed.hash) {
+    throw new Error("MONGODB_URI has an invalid hostname. Check that the Atlas cluster hostname is correct and credentials are URL-encoded.");
+  }
+  if (parsed.protocol === "mongodb+srv:" && parsed.port) {
+    throw new Error("MONGODB_URI uses mongodb+srv:// and must not specify a port.");
+  }
+}
+
 const mailer = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
@@ -468,7 +487,15 @@ async function start() {
     throw new Error("ADMIN_EMAIL must be a valid email address.");
   }
 
-  await mongoose.connect(MONGODB_URI);
+  validateMongoUri(MONGODB_URI);
+  try {
+    await mongoose.connect(MONGODB_URI);
+  } catch (error) {
+    if (error.code === "EBADNAME" || /querySrv EBADNAME/i.test(error.message)) {
+      throw new Error("MongoDB Atlas SRV DNS lookup failed because the hostname in MONGODB_URI is invalid. In Render, replace MONGODB_URI with the complete Atlas Driver connection string, ensure the host is the real cluster hostname ending in .mongodb.net, and URL-encode any special characters in the database credentials. Do not include angle brackets or quotes.");
+    }
+    throw error;
+  }
   const existingAdmin = await Admin.findOne({ username: ADMIN_USERNAME });
   if (!existingAdmin) {
     await Admin.create({
