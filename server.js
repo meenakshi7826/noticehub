@@ -503,6 +503,15 @@ async function start() {
       password: ADMIN_PASSWORD_HASH,
       sessionVersion: 0
     });
+  } else if (process.env.FORCE_ADMIN_PASSWORD_RESET === "true") {
+    await Admin.updateOne(
+      { _id: existingAdmin.id },
+      {
+        $set: { password: ADMIN_PASSWORD_HASH },
+        $unset: { resetTokenHash: 1, resetTokenExpiresAt: 1 },
+        $inc: { sessionVersion: 1 }
+      }
+    );
   }
   app.listen(PORT, () => console.log(`NoticeHub is running at http://localhost:${PORT}`));
 }
